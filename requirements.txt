@@ -1,0 +1,5 @@
+aiohttp==3.9.5
+python-telegram-bot==21.6
+python-dotenv==1.0.1
+uvloop==0.21.0; platform_system != 'Windows'
+

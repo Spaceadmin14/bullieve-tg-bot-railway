@@ -1,6 +1,7 @@
 import os
 from dataclasses import dataclass
 from typing import List
+from dotenv import load_dotenv
 
 
 def _get_env(name: str, default: str = "") -> str:
@@ -27,6 +28,10 @@ class Settings:
 
 
 def load_settings() -> Settings:
+    # Load .env file if it exists
+    if os.path.exists(".env"):
+        load_dotenv(".env")
+    
     chat_id = _get_env("TELEGRAM_CHAT_ID")
     chat_ids_env = _get_env("TELEGRAM_CHAT_IDS")
     chat_ids: List[str] = []

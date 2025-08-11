@@ -40,6 +40,7 @@ async def process_single_address(
     wallet: str,
     settings,
     tx_parser: TransactionParser,
+    wallet_type: str = "primary",  # Add wallet_type parameter
 ) -> None:
     try:
         last_sig = state.load_last_signature(addr)
@@ -78,7 +79,7 @@ async def process_single_address(
         if not tx:
             continue
 
-        event = tx_parser.parse_transaction(tx, wallet, "primary")
+        event = tx_parser.parse_transaction(tx, wallet, wallet_type)  # Use wallet_type instead of "primary"
         if event:
             event_type = event.get("type")
             details = event
@@ -89,6 +90,7 @@ async def process_single_address(
         logger.info(f"[event] owner={wallet} via={addr} sig={sig} type={event_type} details={details}")
 
         if event and event.get("type") == "fee":
+            logger.info(f"[FEE DETECTED] wallet={wallet} amount={event.get('amount')} mint={event.get('mint')}")
             mint = event.get("mint", "")
             amount = float(event.get("amount", 0))
             symbol = event.get("symbol", mint)
@@ -126,6 +128,7 @@ async def process_single_address(
             except Exception as exc:
                 logger.error(f"[error] telegram send fee_income failed: {exc}")
         elif event and event.get("type") == "burn":
+            logger.info(f"[BURN DETECTED] wallet={wallet} amount={event.get('amount')} mint={event.get('mint')}")
             amount = float(event.get("amount", 0))
             symbol = "BULLIEVE"
             usd = None
@@ -152,6 +155,8 @@ async def process_single_address(
                 await notifier.send_media("/app/media/alert.jpg", caption=caption, media_type="photo")
             except Exception as exc:
                 logger.error(f"[error] telegram send burn failed: {exc}")
+        else:
+            logger.debug(f"[NO EVENT] wallet={wallet} event_type={event_type}")
 
         state.save_last_signature(addr, new_sigs[0])
 
@@ -161,6 +166,7 @@ async def process_wallet_and_token_accounts(
     state: StateStore,
     wallet: str,
     settings,
+    wallet_type: str = "primary",  # Add wallet_type parameter
 ) -> None:
     try:
         token_accounts = await client.get_token_accounts_by_owner(wallet)
@@ -182,7 +188,7 @@ async def process_wallet_and_token_accounts(
     
     async def process_with_semaphore(addr: str):
         async with semaphore:
-            await process_single_address(client, notifier, state, addr, wallet, settings, tx_parser)
+            await process_single_address(client, notifier, state, addr, wallet, settings, tx_parser, wallet_type)  # Pass wallet_type
     
     tasks = [process_with_semaphore(addr) for addr in addresses]
     await asyncio.gather(*tasks, return_exceptions=True)
@@ -207,8 +213,8 @@ async def main() -> None:
             except Exception as exc:
                 logger.error(f"Failed to refresh manual prices: {exc}")
                 pass
-            await process_wallet_and_token_accounts(client, notifier, state, settings.primary_wallet_address, settings)
-            await process_wallet_and_token_accounts(client, notifier, state, settings.secondary_wallet_address, settings)
+            await process_wallet_and_token_accounts(client, notifier, state, settings.primary_wallet_address, settings, "primary")
+            await process_wallet_and_token_accounts(client, notifier, state, settings.secondary_wallet_address, settings, "secondary")
             await asyncio.sleep(settings.poll_interval_seconds)
     finally:
         await notifier.close()

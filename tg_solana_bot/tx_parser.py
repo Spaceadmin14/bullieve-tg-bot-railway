@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Any, Dict, List, Optional, Tuple
 
 
@@ -122,21 +126,33 @@ def classify_event(
     # burn detection (SPL Token burn reduces supply; not a transfer)
     parsed_burn_amt = _detect_parsed_burn_amount()
     if parsed_burn_amt > 0:
+        logger.info(f"[BURN] Parsed burn amount detected: {parsed_burn_amt}")
         # If parsed shows raw token units, balances heuristic below will still capture uiAmount; prefer balances if available
         mint_transfers = [t for t in transfers if t.get("mint") == bullieve_mint]
         if mint_transfers:
             sum_delta = sum(t.get("delta", 0.0) for t in mint_transfers)
             if sum_delta < 0:
+                logger.info(f"[BURN] Using balance delta: {abs(sum_delta)}")
                 return "burn", {"mint": bullieve_mint, "amount": abs(sum_delta)}
         return "burn", {"mint": bullieve_mint, "amount": parsed_burn_amt}
 
     # Heuristic burn: for the mint, total delta across all owners is negative and no positive receiver
     mint_transfers = [t for t in transfers if t.get("mint") == bullieve_mint]
     if mint_transfers:
+        logger.info(f"[BURN] Checking mint transfers for {bullieve_mint}: {mint_transfers}")
         sum_delta = sum(t.get("delta", 0.0) for t in mint_transfers)
         any_positive = any(t.get("delta", 0.0) > 0 for t in mint_transfers)
         if sum_delta < 0 and not any_positive:
+            logger.info(f"[BURN] Heuristic burn detected: {abs(sum_delta)}")
             return "burn", {"mint": bullieve_mint, "amount": abs(sum_delta)}
+        
+        # Additional burn detection: if secondary wallet has negative delta for Bullieve mint
+        secondary_bullieve_transfers = [t for t in mint_transfers if t.get("owner") == secondary_wallet]
+        if secondary_bullieve_transfers:
+            secondary_delta = sum(t.get("delta", 0.0) for t in secondary_bullieve_transfers)
+            if secondary_delta < 0:
+                logger.info(f"[BURN] Secondary wallet burn detected: {abs(secondary_delta)}")
+                return "burn", {"mint": bullieve_mint, "amount": abs(secondary_delta)}
 
     # transfer to secondary: SOL or token outflow from primary and inflow to secondary
     # We detect by postBalances delta for SOL, and tokenBalances delta for tokens.
@@ -180,6 +196,14 @@ class TransactionParser:
                 "symbol": details["mint"] if details["mint"] == "SOL" else "Unknown"
             }
         elif event_type == "burn" and wallet_name == "secondary":
+            return {
+                "type": "burn",
+                "amount": details["amount"],
+                "mint": details["mint"],
+                "symbol": "BULLIEVE"
+            }
+        elif event_type == "burn" and wallet_name == "primary":
+            # Also detect burns on primary wallet (in case burns happen there)
             return {
                 "type": "burn",
                 "amount": details["amount"],

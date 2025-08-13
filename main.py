@@ -113,14 +113,13 @@ async def process_single_address(
             amt_txt = _fmt_amount(amount, 9)
             
             caption = (
-                "BULLIEVE-SWAP FEES COLLECTED! 💰\n\n"
+                "NEW BULLIEVE-SWAP COMPLETED! 💰\n\n"
                 f"FEES COLLECTED: {amt_txt} {symbol}"
             )
             if usd is not None:
                 caption += f" (~${usd:,.2f})"
             caption += (
-                f"\n\nBULLIEVER: {signer}\n\n"
-                "🔥 Let's burnnnnn 🔥"
+                "\n\n🔥 Let's burnnnnn 🔥"
             )
 
             try:

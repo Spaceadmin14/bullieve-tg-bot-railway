@@ -104,6 +104,31 @@ async def process_single_address(
                 symbol = "USDT"
             elif mint == "So11111111111111111111111111111111111111112":
                 symbol = "WSOL"
+            elif mint == "pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn":
+                symbol = "PUMP"
+            elif mint == "63LfDmNb3MQ8mw9MtZ2To9bEA2M71kZUUGq5tiJxcqj9":
+                symbol = "GIGA"
+            elif mint == "A8C3xuqscfmyLrte3VmTqrAq8kgMASius9AFNANwpump":
+                symbol = "FWOG"
+            elif mint == "A8C3xuqscfmyLrte3VmTqrAq8kgMASius9AFNANwpump":
+                symbol = "POPCAT"
+            elif mint == "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN":
+                symbol = "TRUMP"
+            elif mint == "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv":
+                symbol = "PENGU"
+            elif mint == "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump":
+                symbol = "FARTCOIN"
+            elif mint == "J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr":
+                symbol = "SPX"
+            elif mint == "26VfKb7jjtdEdvfovoBijScoZmJbWWasFZkgfUD5w7cy":
+                symbol = "MOG"
+            elif mint == "21AErpiB8uSb94oQKRcwuHqyHF93njAxBSbdUrpupump":
+                symbol = "WIF"
+            elif mint == "HdzMjvQvFP9nxp1X2NbHFptZK1G6ASsyRcxNdn65ABxi":
+                symbol = "BULLIEVE"
+
+
+                
 
             usd = None
             if amount and mint:
@@ -119,7 +144,7 @@ async def process_single_address(
             if usd is not None:
                 caption += f" (~${usd:,.2f})"
             caption += (
-                "\n\n🔥 Let's burnnnnn 🔥"
+                "\n\n🔥 Let's burn more: bullieve.com 🔥"
             )
 
             try:

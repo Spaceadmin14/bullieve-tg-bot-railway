@@ -96,22 +96,18 @@ async def process_single_address(
             symbol = event.get("symbol", mint)
             signer = client.get_first_signer_address(tx) or "unknown"
             
-            if mint == "So11111111111111111111111111111111111111112" or mint.upper() == "SOL":
+            if mint == "So11111111111111111111111111111111111111112":
                 symbol = "SOL"
             elif mint == "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v":
                 symbol = "USDC"
             elif mint == "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB":
                 symbol = "USDT"
-            elif mint == "So11111111111111111111111111111111111111112":
-                symbol = "WSOL"
             elif mint == "pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn":
                 symbol = "PUMP"
             elif mint == "63LfDmNb3MQ8mw9MtZ2To9bEA2M71kZUUGq5tiJxcqj9":
                 symbol = "GIGA"
             elif mint == "A8C3xuqscfmyLrte3VmTqrAq8kgMASius9AFNANwpump":
                 symbol = "FWOG"
-            elif mint == "A8C3xuqscfmyLrte3VmTqrAq8kgMASius9AFNANwpump":
-                symbol = "POPCAT"
             elif mint == "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN":
                 symbol = "TRUMP"
             elif mint == "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv":
@@ -126,9 +122,8 @@ async def process_single_address(
                 symbol = "WIF"
             elif mint == "HdzMjvQvFP9nxp1X2NbHFptZK1G6ASsyRcxNdn65ABxi":
                 symbol = "BULLIEVE"
-
-
-                
+            elif mint == "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr":
+                symbol="POPCAT"
 
             usd = None
             if amount and mint:

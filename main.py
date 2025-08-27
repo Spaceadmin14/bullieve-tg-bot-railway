@@ -44,31 +44,41 @@ async def process_single_address(
 ) -> None:
     try:
         last_sig = state.load_last_signature(addr)
+        
+        # Optimized: Check only the latest signature first
+        latest_sig_response = await client.get_signatures_for_address(addr, before=None, limit=1)
+        if not latest_sig_response:
+            return
+            
+        latest_sig = latest_sig_response[0].get("signature")
+        
+        # If no stored signature, initialize
+        if last_sig is None:
+            logger.info(f"[init] addr={addr} initialize last_sig to {latest_sig} (skip history)")
+            state.save_last_signature(addr, latest_sig)
+            return
+            
+        # If latest signature is the same as stored, no new transactions
+        if latest_sig == last_sig:
+            return
+            
+        # If different, fetch more signatures until we find the stored one
         signatures = await client.get_signatures_for_address(addr, before=None, limit=10)
+        
+        new_sigs: List[str] = []
+        for entry in signatures:
+            sig = entry.get("signature")
+            if sig == last_sig:
+                break
+            new_sigs.append(sig)
+
+        if not new_sigs:
+            return
+
+        logger.info(f"[poll] addr={addr} new_sigs={len(new_sigs)}")
     except Exception as exc:
         logger.error(f"[error] get_signatures_for_address failed addr={addr}: {exc}")
         return
-
-    if not signatures:
-        return
-
-    if last_sig is None:
-        top_sig = signatures[0].get("signature")
-        logger.info(f"[init] addr={addr} initialize last_sig to {top_sig} (skip history)")
-        state.save_last_signature(addr, top_sig)
-        return
-
-    new_sigs: List[str] = []
-    for entry in signatures:
-        sig = entry.get("signature")
-        if sig == last_sig:
-            break
-        new_sigs.append(sig)
-
-    if not new_sigs:
-        return
-
-    logger.info(f"[poll] addr={addr} new_sigs={len(new_sigs)}")
 
     for sig in reversed(new_sigs):
         try:
@@ -124,6 +134,8 @@ async def process_single_address(
                 symbol = "BULLIEVE"
             elif mint == "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr":
                 symbol="POPCAT"
+            elif mint == "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263":
+                symbol="BONK"
 
             usd = None
             if amount and mint:

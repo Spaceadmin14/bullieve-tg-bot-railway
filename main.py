@@ -138,8 +138,8 @@ async def process_single_address(
                 symbol="BONK"
 
             usd = None
-            if amount and mint:
-                usd_price = await price_client.get_usd_price(mint)
+            if amount and symbol:
+                usd_price = await price_client.get_usd_price(symbol)
                 if usd_price:
                     usd = amount * usd_price
             amt_txt = _fmt_amount(amount, 9)

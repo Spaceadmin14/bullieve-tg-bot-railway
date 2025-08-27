@@ -63,7 +63,7 @@ async def process_single_address(
             return
             
         # If different, fetch more signatures until we find the stored one
-        signatures = await client.get_signatures_for_address(addr, before=None, limit=10)
+        signatures = await client.get_signatures_for_address(addr, before=None, limit=5)
         
         new_sigs: List[str] = []
         for entry in signatures:
